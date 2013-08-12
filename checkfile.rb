@@ -11,7 +11,8 @@ class SilabsWSP
 	"CompFlag=",
 	"Linker=",
 	"LinkFlag=",
-	"LinkFormat="
+	"LinkFormat=",
+	"HexGenerator="
 	]
 
 	@@key_contents = {
@@ -23,7 +24,8 @@ class SilabsWSP
 	"CompFlag=" => "DB OE BR\n",
 	"Linker=" => "C:\\Keil\\C51\\BIN\\BL51.EXE\n",
 	"LinkFlag=" => "RS(256) PL(68) PW(78)\n",
-	"LinkFormat=" => "<Executable Name> <Input File(s)> TO <Output File> <Flags>\n"
+	"LinkFormat=" => "<Executable Name> <Input File(s)> TO <Output File> <Flags>\n",
+	"HexGenerator=" => "C:\\Keil\\C51\\BIN\\OH51.EXE\n"
 	}
 	
 	@@restore_default_setting = 0
@@ -34,26 +36,33 @@ class SilabsWSP
 
 	def handle_contents(line, a)
 		new_line = line
-		if @@restore_default_setting == 1
-			new_line = a + @@key_contents[a]
-		elsif
+		if @@restore_default_setting == 0
+			#new_line = a + @@key_contents[a]
+		#elsif
 			case a
 			when "Vendor="
 				p "The Tool Definition Presets is selecting preset"
 				@@restore_default_setting = 1
-				new_line = a + @@key_contents[a]
+				#new_line = a + @@key_contents[a]
 			when "AssFlag=", "CompFlag="
 				if line.include?" INCDIR"
-					new_line = line.split(" INCDIR")[0] + "\n"
+					tmp = line.split(" ")
+					new_line = ""
+					tmp.each do |l|
+						if not l.include?"INCDIR"
+							new_line += l + " "
+						end
+					end
+					new_line = new_line.strip + "\n"
 				end
-			when "Assembler=","Compiler=", "Linker="
+			when "Assembler=","Compiler=", "Linker=", "HexGenerator="
 				new_line = a + @@key_contents[a]
 			end
 		end
 		
 		if new_line != line
-			p line
-			p new_line
+			p "Org: " + line
+			p "New: " + new_line
 		end
 		return new_line
 	end
