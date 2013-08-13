@@ -1,5 +1,5 @@
 require 'find'
-
+require 'fileutils'
 
 class SilabsWSP
 	@@key_words = [
@@ -30,20 +30,35 @@ class SilabsWSP
 	
 	@@restore_default_setting = 0
 	
+	@@headfile_dir = "C:/Silabs/MCU/INC"
+	@@headfiles = [
+	"/compiler_defs.h",
+	"/C8051F500_defs.h"
+	]
+	
 	def initialize(path)
 		@path = path
 	end
 
+	def copy_head_files(fn)
+		cur_dir = File.dirname(fn)
+		# compiler_defs.h
+		dst = cur_dir + @@headfiles[0] 
+		src = @@headfile_dir + @@headfiles[0]
+		if not File.exist?(dst) 
+			#FileUtils.cp(src, dst)
+			p "Copy compiler_defs.h to " + dst
+		end
+		# C8051Fxx_defs.h
+	end
+	
 	def handle_contents(line, a)
 		new_line = line
 		if @@restore_default_setting == 0
-			#new_line = a + @@key_contents[a]
-		#elsif
 			case a
 			when "Vendor="
 				p "The Tool Definition Presets is selecting preset"
 				@@restore_default_setting = 1
-				#new_line = a + @@key_contents[a]
 			when "AssFlag=", "CompFlag="
 				if line.include?" INCDIR"
 					tmp = line.split(" ")
@@ -83,17 +98,14 @@ class SilabsWSP
 			end
 			i += 1
 		end
-		p "**********************************************************************"
-		f.seek(0)
-		#line_count = 1
-		#lines.each do |line|
-			#puts line
-		#	puts line_count
-		#	f.print line
-		#	line_count += 1
-		#end
-		#f.puts lines
 		f.close
+		copy_head_files(fn)
+		if @@restore_default_setting == 0
+			#f = File.new(fn, "w+")
+			#f.puts lines
+			#f.close
+		end
+		p "**********************************************************************"
 	end
 
 	def find_wsp
